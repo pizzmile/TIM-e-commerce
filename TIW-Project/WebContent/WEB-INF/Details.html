@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"/>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" media="all" href="/TIW-Project/css/style.css"/>
+    <title th:text="'Details | ' + ${auction.item.name}">Details</title>
+    <!-- border: 1px solid #dddddd; -->
+    <style>
+        #logoff-btn {
+            font-size: 12px;
+            padding: 5px 10px;
+        }
+
+        #details {
+            padding: 0 10px;
+            width: 400px;
+        }
+
+        #details>div>h2 {
+            margin: 0;
+        }
+        #details>div>p {
+            margin: 0;
+        }
+
+        #details h3 {
+            margin: 10px 0;
+        }
+
+        #details p {
+            margin: 5px 0;
+        }
+        
+        .auction-img {
+            width: 300px;
+            height: 300px;
+            object-fit: cover;
+        }
+        
+        table {
+        	margin: 20px 0;
+	  		border-collapse: collapse;
+		}
+		
+		td, th {
+		  	text-align: left;
+		  	padding: 8px;
+		}
+        
+        tr:nth-child(even) {
+		  	background-color: #dddddd;
+		}
+		
+		/* BG SCENE */
+        #circle1 {
+            background: linear-gradient(to bottom left, dodgerblue, cyan);
+            bottom: 5rem;
+            left: 10rem;
+            height: 30rem;
+            width: 30rem;
+        }
+        #circle2 {
+            background: linear-gradient(to bottom right, cyan, dodgerblue);
+            top: 5rem;
+            right: 15rem;
+            height: 20rem;
+            width: 20rem;
+        }
+        #circle3 {
+            background: linear-gradient(to top left, dodgerblue, cyan);
+            top: 2.5rem;
+            right: 35rem;
+            height: 5rem;
+            width: 5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <div class="container navbar glass columns centered-flex">
+      <div class="nav-logo"><img src="/TIW-Project/img/gavel.svg" alt="" class="small-logo"></div>
+      <div class="nav-links">
+          <a href="home" class="text-primary-accent">Home</a>
+          <a href="buy" class="text-primary-accent">Buy</a>
+          <a href="sell" class="text-primary-accent">Sell</a>
+      </div>
+      <div class="nav-opt">
+      	<a href="PerformLogout">
+          <button class="round primary-accent" id="logoff-btn">Log Off</button>
+        </a>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="rows centered-flex text-color-background">
+        <div class="columns glass" style="margin: 80px 0 0 0;">
+            <div class="columns centered-flex">
+                <img th:src="${'data:image/png;base64,' + auction.item.image}" alt="item image" class="auction-img">
+            </div>
+            <div id="details">
+            	<div>
+	            	<h2 th:text="${auction.item.name}">name</h2>
+	                <p>Item code: <span th:text="${auction.item.id}"></span></p>
+            	</div>
+                <h3 th:text="'EUR ' + ${auction.currentPrice}">current price</h3>
+                <p>Minimum rise: <span th:text="'EUR ' + ${auction.minimumRise}" style="font-weight: bold;"></span></p>
+                <p>Starting price: <span th:text="'EUR ' + ${auction.startingPrice}" style="font-weight: bold;"></span></p>
+                <p>Ends on <span th:text="${auction.endTimestamp.toString().replace('T', ' ')}" style="font-weight: bold;"></span></p>
+                <p>Time left: <span th:text="${auction.timeLeftFormatted}" style="font-weight: bold;"></span></p>
+                <p th:if="${auction.open}">Status: <span style="font-weight: bold;">Open</span></p>
+                <p th:if="${not auction.open}">Status: <span style="font-weight: bold;">Closed</span></p>
+            </div>
+        </div>
+        <form method="POST" action="close-auction" th:if="${auction.open && auction.isEnded()}" class="mv20">
+        	<input type="hidden" name="id" th:value="${auction.id}" />
+        	<button type="submit" class="round ph20 pv10">Close auction</button>
+        </form>
+        <table th:if="${auction.open}">
+        	<thead>
+        		<tr>
+		        	<th>Bid ID</th>
+		        	<th>Bidder ID</th>
+                    <th>Bidder Name</th>
+		        	<th>Price</th>
+		        	<th>Time</th>
+		        </tr>
+        	</thead>
+        	<tbody th:if="${auction.open}">
+	        	<tr th:if="${#lists.isEmpty(auction.bids)}">
+		            <td colspan="5"> No Bids Available </td>
+		        </tr>
+        		<tr th:each="i : ${#numbers.sequence(auction.bids.size() - 1, 0, -1)}" th:with="bid=${auction.bids[i]}">
+		        	<td th:text="${bid.id}">Bid ID</td>
+		        	<td th:text="${bid.bidderId}">Bidder ID</td>
+                    <td th:text="${bid.bidderName}">Bidder Name</td>
+		        	<td th:text="${bid.price}">Price</td>
+		        	<td th:text="${bid.timestamp.toString().replace('T', ' ')}">Time</td>
+		        </tr>
+        	</tbody>
+        </table>
+        <p th:if="${winner == null && not auction.open}">None won this auction.</p>
+        <p th:if="${winner != null && not auction.open}" th:text="'This auction was won by ' + ${winner.username} + ', ' + ${winner.address_street} + ', ' + ${winner.address_town}"></p>
+        <div class="w80">
+			<p th:text="${auction.item.description}"></p>
+        </div>
+    </div>
+    <!-- 
+    <span class="bg-circle" id="circle1"></span>
+    <span class="bg-circle" id="circle2"></span>
+    <span class="bg-circle" id="circle3"></span>
+     -->
+</body>
+</html>
